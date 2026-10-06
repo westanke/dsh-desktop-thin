@@ -132,6 +132,21 @@ else
     echo "（未能识别登录用户，跳过预下载；首次启动时会自动补齐）"
   fi
 fi
+
+# 默认插件补装（含插件市场 dshmarket）。独立于 bootstrap 预下载路径：
+# 升级时 bootstrap 可能走「全部就绪无需下载」提前退出，插件补装必须单独触发。
+PLUGINS_SCRIPT="$INSTALL_DIR/tools/install-plugins.sh"
+if [ -x "$PLUGINS_SCRIPT" ]; then
+  if [ -z "${INSTALL_USER:-}" ] || [ "$INSTALL_USER" = "root" ]; then
+    INSTALL_USER="$(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}' | grep -v '^root$' | head -1)"
+  fi
+  if [ -n "$INSTALL_USER" ] && [ "$INSTALL_USER" != "root" ] && id "$INSTALL_USER" >/dev/null 2>&1; then
+    echo "检查默认插件（含插件市场 dshmarket）…"
+    LOG="/home/$INSTALL_USER/.dsh-thin/bootstrap-postinst.log"
+    runuser -u "$INSTALL_USER" -- bash "$PLUGINS_SCRIPT" >>"$LOG" 2>&1 \
+      || echo "（默认插件补装未完成，不影响使用；可手动执行 bash $PLUGINS_SCRIPT）"
+  fi
+fi
 exit 0
 EOF
 chmod 0755 "$STAGE/DEBIAN/postinst"

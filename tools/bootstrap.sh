@@ -24,7 +24,9 @@ SHELL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 CONFIG="$SHELL_DIR/config.json"
 USER_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dsh-thin"
 USER_CONFIG="$USER_CONFIG_DIR/config.json"
-RUNTIME_DIR="${HOME}/.dsh-thin/runtime"
+# 运行时节点的官方落点：$DSH_HOME/dsh-runtimes/...（与官方 Python/Office 同目录树）
+DSH_HOME="${DSH_HOME:-$HOME/.dsh}"
+RUNTIME_DIR="$DSH_HOME/dsh-runtimes/dsh-thin-runtime"
 
 # 国内镜像（全部实测可用）。顺序即优先级。
 NODE_MIRRORS=(

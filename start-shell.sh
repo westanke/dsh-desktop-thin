@@ -16,7 +16,9 @@ CONFIG="$SHELL_DIR/config.json"
 USER_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dsh-thin"
 USER_CONFIG="$USER_CONFIG_DIR/config.json"
 BOOTSTRAP="$SHELL_DIR/tools/bootstrap.sh"
-RUNTIME_DIR="${HOME}/.dsh-thin/runtime"
+# 运行时节点的官方落点：$DSH_HOME/dsh-runtimes/...（与官方 Python/Office 同目录树）
+DSH_HOME="${DSH_HOME:-$HOME/.dsh}"
+RUNTIME_DIR="$DSH_HOME/dsh-runtimes/dsh-thin-runtime"
 
 err()  { echo "✖ $*" >&2; exit 1; }
 say()  { printf '%s\n' "$*"; }
@@ -130,8 +132,8 @@ ELECTRON="$(config_value electron)"; [ -z "$ELECTRON" ] && ELECTRON="$(command -
 [ -x "$ELECTRON" ] || ELECTRON="$(ls "$RUNTIME_DIR"/electron-*/electron 2>/dev/null | head -1)"
 [ -n "$ELECTRON" ] && [ -x "$ELECTRON" ] || err "找不到 electron，无法启动"
 
-# DSH_HOME：每用户私有内核家。多 Home 切换时由 main.js 通过 IPC 重指。
-export DSH_HOME="${DSH_HOME:-$HOME/.dsh-thin/home}"
+# DSH_HOME：官方家目录（默认 $HOME/.dsh，多 Home 切换时由 main.js 通过 IPC 重指）
+export DSH_HOME="$DSH_HOME"
 
 say "启动 dsh-desktop-thin（electron=$ELECTRON, DSH_HOME=$DSH_HOME）"
 exec "$ELECTRON" "$SHELL_DIR"

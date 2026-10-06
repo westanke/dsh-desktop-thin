@@ -9,10 +9,18 @@ import { existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { homedir } from 'node:os'
 
+/** 官方家目录：resolveDshHome 默认 $HOME/.dsh，可被 DSH_HOME 覆盖。 */
+export function resolveDshHome() {
+  return process.env.DSH_HOME ?? join(process.env.HOME ?? homedir(), '.dsh')
+}
+
 /** Read the runtime layout from config.json (already loaded by main). */
 export function readRuntimeConfig(config) {
   const r = config?.runtime ?? {}
-  const runtimeDir = (r.runtimeDir ?? '$HOME/.dsh-thin/runtime')
+  // 运行时节点的官方落点：$DSH_HOME/dsh-runtimes/...（与官方 Python/Office 同目录树）。
+  const dshHome = resolveDshHome()
+  const runtimeDir = (r.runtimeDir ?? '$DSH_HOME/dsh-runtimes/dsh-thin-runtime')
+    .replace('$DSH_HOME', dshHome)
     .replace('$HOME', process.env.HOME ?? homedir())
   return {
     runtimeDir,
