@@ -1,0 +1,9 @@
+# 构建产物（不进版本库）
+/debian/
+/release/
+*.deb
+
+# 系统/编辑器
+.DS_Store
+*.swp
+node_modules/
