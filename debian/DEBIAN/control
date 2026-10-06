@@ -1,0 +1,14 @@
+Package: dsh-desktop-thin
+Version: 0.1.0
+Section: devel
+Priority: optional
+Architecture: amd64
+Depends: bash, curl | wget, tar, gzip, unzip, ca-certificates
+Maintainer: dsh-desktop-thin <noreply@example.com>
+Description: DeepSeek Harness thin desktop shell (Linux x64)
+ 面向 Deepin / UOS / Linux x64 的 DeepSeek Harness 薄壳。
+ 把命令行 agent 运行时 dsh 包进 Electron 窗口，双击即用。
+ .
+ 本包只包含壳代码（约 160KB）。Electron、Node 与 dsh 内核在首次
+ 启动时按需下载（国内镜像优先），见 tools/bootstrap.sh。
+Homepage: https://github.com/dsh-desktop-thin/dsh-desktop-thin

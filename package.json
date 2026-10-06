@@ -1,0 +1,18 @@
+{
+  "name": "dsh-desktop-thin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Thin Electron shell for DeepSeek Harness: ~160KB install, runtime fetched on first launch.",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "build:deb": "bash tools/build-deb.sh"
+  },
+  "dependencies": {
+    "electron": "^33.3.0"
+  },
+  "devDependencies": {
+    "electron": "^33.3.0"
+  }
+}

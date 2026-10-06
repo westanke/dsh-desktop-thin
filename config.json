@@ -1,0 +1,27 @@
+{
+  "appId": "com.deepseek.harness.thin.desktop",
+  "appName": "DeepSeek Harness Thin",
+  "kernel": {
+    "profile": "web",
+    "bin": "dsh",
+    "minNodeMajor": 22,
+    "minNodeMinor": 15
+  },
+  "runtime": {
+    "dshVersion": "0.2.0",
+    "nodeVersion": "v24.19.0",
+    "electronVersion": "v33.3.0",
+    "registry": "https://registry.npmmirror.com",
+    "dshDistBase": "https://registry.npmmirror.com/-/binary/dsh",
+    "nodeMirrors": [
+      "https://npmmirror.com/mirrors/node",
+      "https://mirrors.huaweicloud.com/nodejs"
+    ],
+    "electronMirrors": [
+      "https://npmmirror.com/mirrors/electron",
+      "https://mirrors.huaweicloud.com/electron"
+    ],
+    "runtimeDir": "$HOME/.dsh-thin/runtime"
+  },
+  "_comment_runtimeDir": "每用户运行时目录，壳代码只装一次，运行时首启按需下载到此。"
+}

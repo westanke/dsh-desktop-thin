@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -uo pipefail
+INSTALL_DIR="/opt/dsh-desktop-thin"
+BOOTSTRAP="$INSTALL_DIR/tools/bootstrap.sh"
+echo ""
+echo "dsh-desktop-thin 已安装到 $INSTALL_DIR"
+echo ""
+if [ -x "$BOOTSTRAP" ]; then
+  echo "正在检查运行时依赖（Electron / Node / dsh）…"
+  echo ""
+  bash "$BOOTSTRAP" check || {
+    echo ""
+    echo "提示：缺少运行时依赖。可自动下载："
+    echo "  bash $BOOTSTRAP install"
+    echo "或直接启动（首次启动也会自动补齐）："
+    echo "  bash $INSTALL_DIR/start-shell.sh"
+    echo ""
+  }
+fi
+
+# 以「真实登录用户」身份在后台预下载运行时（约 180MB，不阻塞安装）。
+if [ "${DSH_NO_POSTINST_DOWNLOAD:-}" = "1" ]; then
+  echo "（已设置 DSH_NO_POSTINST_DOWNLOAD=1，跳过安装后预下载）"
+else
+  INSTALL_USER="${SUDO_USER:-}"
+  if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" = "root" ]; then
+    INSTALL_USER="$(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}' | grep -v '^root$' | head -1)"
+  fi
+  if [ -z "$INSTALL_USER" ]; then
+    for candidate in /home/*; do
+      [ -d "$candidate" ] || continue
+      name="$(basename "$candidate")"
+      if id "$name" >/dev/null 2>&1; then INSTALL_USER="$name"; break; fi
+    done
+  fi
+  if [ -n "$INSTALL_USER" ] && [ "$INSTALL_USER" != "root" ] && id "$INSTALL_USER" >/dev/null 2>&1 && [ -x "$BOOTSTRAP" ]; then
+    echo "正在为 $INSTALL_USER 后台预下载运行时（约 180MB，不阻塞安装）…"
+    LOG="/home/$INSTALL_USER/.dsh-thin/bootstrap-postinst.log"
+    if command -v runuser >/dev/null 2>&1; then
+      runuser -u "$INSTALL_USER" -- setsid nohup bash "$BOOTSTRAP" install >>"$LOG" 2>&1 &
+    else
+      su - "$INSTALL_USER" -c "setsid nohup bash '$BOOTSTRAP' install >>'$LOG' 2>&1 &"
+    fi
+    echo "下载在后台进行；完成后双击启动器即可直接使用。"
+  else
+    echo "（未能识别登录用户，跳过预下载；首次启动时会自动补齐）"
+  fi
+fi
+exit 0

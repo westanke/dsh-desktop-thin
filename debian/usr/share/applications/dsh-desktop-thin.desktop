@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=DSH Thin Desktop
+GenericName=DeepSeek Harness 薄壳
+Comment=DeepSeek Harness agent 运行时桌面薄壳（首次启动会下载运行时）
+Exec=bash /opt/dsh-desktop-thin/start-shell.sh
+Terminal=false
+Type=Application
+Icon=dsh-desktop-thin
+StartupWMClass=dsh-desktop-thin
+Categories=Development;Utility;
