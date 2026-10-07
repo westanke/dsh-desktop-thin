@@ -1,0 +1,40 @@
+version: '1.0'
+name: build_deb
+displayName: 薄壳 deb 打包（amd64 + arm64）
+
+stages:
+  - stage:
+      name: build
+      displayName: 打包
+      strategy: naturally
+      trigger: auto
+    steps:
+      # 只出 amd64：Gitee Go 公共主机组以 x86_64 为主，交叉打 arm64 需装 qemu，慢且不稳
+      - step: shell@agent
+        name: build_amd64
+        displayName: 打 amd64 deb
+        hostGroupID: gitee-go
+        script: |
+          set -euo pipefail
+          echo "──── 环境自检 ────"
+          cat /etc/os-release | head -3
+          command -v dpkg-deb || { echo "✖ 缺 dpkg-deb"; exit 1; }
+          command -v node    || { echo "✖ 缺 node（读 package.json 版本号用）"; exit 1; }
+          echo "──── 开始打包 ────"
+          bash tools/build-deb.sh amd64
+          echo "──── 产物校验 ────"
+          ls -lh release/
+          dpkg-deb --info release/*.deb | head -20
+          # 确认包内确实只有壳代码、没有 Electron 运行时
+          dpkg-deb --contents release/*.deb | grep -iE 'electron|node_modules|\.so$' && {
+            echo "✖ 包内混入了运行时文件，打包策略被破坏"; exit 1; } || true
+          echo "✅ amd64 deb 校验通过"
+
+      - step: shell@agent
+        name: upload
+        displayName: 上传制品
+        hostGroupID: gitee-go
+        dependsOn: build_amd64
+        script: |
+          echo "制品目录："
+          ls -lh release/
