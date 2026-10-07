@@ -1,0 +1,59 @@
+name: 打薄壳 deb
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    # ubuntu-24.04 自带 dpkg-deb，薄壳打包只需要它 + bash
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 环境自检
+        run: |
+          echo "──── runner 环境 ────"
+          . /etc/os-release && echo "系统: $PRETTY_NAME"
+          echo "架构: $(uname -m)"
+          command -v dpkg-deb || { echo "✖ 缺 dpkg-deb"; exit 1; }
+          command -v node    || { echo "✖ 缺 node（build-deb.sh 读它取版本号）"; exit 1; }
+          echo "node: $(node -v)"
+
+      - name: 打 amd64 deb
+        run: bash tools/build-deb.sh amd64
+
+      - name: 产物校验
+        run: |
+          set -euo pipefail
+          ls -lh release/
+          echo "──── 包信息 ────"
+          dpkg-deb --info release/*.deb
+          echo "──── 包内容 ────"
+          dpkg-deb --contents release/*.deb
+          # 薄壳的招牌：包里绝不能有 Electron/Node 运行时
+          if dpkg-deb --contents release/*.deb | grep -qiE 'electron|node_modules|\.so$'; then
+            echo "✖ 包内混入运行时，打包策略被破坏"
+            exit 1
+          fi
+          echo "✅ 校验通过：只含壳代码，无运行时"
+
+      - name: 上传制品
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-desktop-thin-deb-amd64
+          path: release/*.deb
+          retention-days: 90
+
+      - name: 推 tag 时发布 Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          gh release create "$tag" release/*.deb \
+            --title "dsh-desktop-thin $tag" \
+            --generate-notes || gh release upload "$tag" release/*.deb --clobber
